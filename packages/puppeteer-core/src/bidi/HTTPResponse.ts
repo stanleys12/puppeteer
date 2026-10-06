@@ -98,16 +98,17 @@ export class BidiHTTPResponse extends HTTPResponse {
   override headers(): Record<string, string> {
     const headers: Record<string, string> = {};
     for (const header of this.#data.headers) {
-      // TODO: How to handle Binary Headers
+      const headerName = header.name.toLowerCase();
       // https://w3c.github.io/webdriver-bidi/#type-network-Header
-      if (header.value.type === 'string') {
-        const headerName = header.name.toLowerCase();
-        const value =
-          headerName in headers
-            ? `${headers[headerName]}\n${header.value.value}`
-            : header.value.value;
-        headers[headerName] = normalizeHeaderValue(headerName, value);
-      }
+      const headerValue =
+        header.value.type === 'base64'
+          ? atob(header.value.value)
+          : header.value.value;
+      const value =
+        headerName in headers
+          ? `${headers[headerName]}\n${headerValue}`
+          : headerValue;
+      headers[headerName] = normalizeHeaderValue(headerName, value);
     }
     return headers;
   }

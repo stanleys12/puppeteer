@@ -65,4 +65,20 @@ describe('BidiHTTPResponse', () => {
     const response = BidiHTTPResponse.from(data, request, false);
     expect(response.headers()['cache-control']).toBe('no-cache, no-store');
   });
+
+  it('should decode base64 header values', () => {
+    const response = BidiHTTPResponse.from(
+      {
+        headers: [
+          {name: 'X-Binary', value: {type: 'base64', value: 'Y2Fm6Q=='}},
+        ],
+      } as Bidi.Network.ResponseData,
+      {
+        response: () => undefined,
+        frame: () => undefined,
+      } as unknown as BidiHTTPRequest,
+      false,
+    );
+    expect(response.headers()).toEqual({'x-binary': 'caf\u00e9'});
+  });
 });
